@@ -288,3 +288,20 @@ What is their relationship?
  + \dfrac{(\Delta t \lambda_{\text{max}})^3}{6}
  + \dfrac{(\Delta t \lambda_{\text{max}})^4}{24}
 \end{equation*}
+
+with
+
+\begin{equation*}
+\lambda_{\text{max}} = 1 + \nu_{\text{max}}\Delta t,
+\qquad
+\nu_{max} = \nu_{2}(\eta_{\text{min}}) = -h
+\quad\Rightarrow\quad
+\boxed{\lambda_{\text{max}} = 1 - h\Delta t}
+\end{equation*}
+
+Therefore:
+
+\begin{equation*}
+|\mu_\text{max}| < 1
+\quad\Rightarrow\quad
+\end{equation*}
