@@ -1,0 +1,290 @@
+#+TITLE: Soft Kilobot Theory
+#+AUTHOR: Carlo Pinciroli
+#+OPTIONS: H:2 toc:nil num:t
+#+LATEX_CLASS: beamer
+#+LATEX_CLASS_OPTIONS: [aspectratio=169]
+#+LATEX_COMPILER: LuaLaTeX
+#+BEAMER_THEME: nestlab
+#+COLUMNS: %45ITEM %10BEAMER_ENV(Env) %10BEAMER_ACT(Act) %4BEAMER_COL(Col)
+#+LATEX_HEADER: \usepackage{mathtools}
+#+LATEX_HEADER_EXTRA: \hypersetup{colorlinks=true,allcolors=black,urlcolor=wpired}
+
+* Theory Basics
+
+** Force Diagram
+- $p_{i}$ propulsion
+- $k(x_{j}-x_{i})$ Hooke’s Law
+- $-h\dot{x}_{i}$ friction
+
+#+begin_src latex
+  \centering
+  \begin{tikzpicture}
+    \node(i)[circle,draw]           {$i$};
+    \node(j)[circle,draw,right=3cm of i]{$j$};
+    \draw[->] (i) -- +(0,1) node[above]{$p_{i}$};
+    \draw[->] (i) -- (j) node[midway,above]{$k(x_{j}-x_{i})$};
+    \draw[->] (i) -- +(0,-1) node[below]{$-h\dot{x}_{i}$};
+  \end{tikzpicture}
+#+end_src
+
+** Basic Equations
+For each robot $i$, $j$:
+\begin{align*}
+m \ddot {x}_{i} &= p_{i} - h \dot{x}_{i} + k (x_{j} - x_{i})\\
+m \ddot {x}_{j} &= p_{j} - h \dot{x}_{j} + k (x_{i} - x_{j})\\
+\end{align*}
+
+In vector form:
+\begin{align*}
+m
+\begin{bmatrix}
+  \ddot{x}_{i}\\
+  \ddot{x}_{j}\\
+\end{bmatrix}
+&=
+\begin{bmatrix}
+  p_{i}\\
+  p_{j}\\
+\end{bmatrix}
+- h
+\begin{bmatrix}
+  \dot{x}_{i}\\
+  \dot{x}_{j}\\
+\end{bmatrix}
+- k \mathbf{L}
+\begin{bmatrix}
+  x_{i}\\
+  x_{j}\\
+\end{bmatrix}\\
+m \ddot{\mathbf{x}} &= \mathbf{p} - h \dot{\mathbf{x}} - k\mathbf{L} \mathbf{x}
+\end{align*}
+where $\mathbf{L}$ is the *Laplacian matrix*
+
+** ODE Form
+We can define $\mathbf{v} = \dot{\mathbf{x}}$ and write:
+\begin{equation*}
+\left\{
+\begin{aligned}
+\dot{\mathbf{x}} &= \mathbf{v} \\
+\dot{\mathbf{v}} &= \dfrac{1}{m}\mathbf{p} - \dfrac{h}{m}\mathbf{v} - \dfrac{k}{m}\mathbf{L} \mathbf{x}
+\end{aligned}
+\right.
+\end{equation*}
+Then we define the symbols:
+\begin{align*}
+\mathbf{p}' &\triangleq \dfrac{1}{m}\mathbf{p} &
+h' &\triangleq \dfrac{h}{m} &
+\mathbf{L}' &\triangleq \dfrac{k}{m}\mathbf{L}
+\end{align*}
+So we get:
+\begin{equation*}
+\left\{
+\begin{aligned}
+\dot{\mathbf{x}} &= \mathbf{v} \\
+\dot{\mathbf{v}} &= \mathbf{p}' - h'\mathbf{v} - \mathbf{L}' \mathbf{x}
+\end{aligned}
+\right.
+\end{equation*}
+
+* Discrete ODE Form (Euler)
+
+** Discrete ODE Form (Euler)
+We now discretize the previous ODE using a Euler step $\Delta t$:
+\begin{equation*}
+\left\{
+\begin{aligned}
+\mathbf{x}(t+1) &= \mathbf{x}(t) + \mathbf{v}(t) \Delta t \\
+\mathbf{v}(t+1) &= \mathbf{v}(t) + \mathbf{p}'\Delta t - h'\mathbf{v}(t) \Delta t - \mathbf{L}' \mathbf{x}(t) \Delta t
+\end{aligned}
+\right.
+\end{equation*}
+Which can be expressed in an even more compact matrix form by defining:
+\begin{align*}
+\mathbf{w}(t) &=
+  \begin{bmatrix}
+  \mathbf{x}(t)\\
+  \mathbf{v}(t)
+  \end{bmatrix}
+&
+\mathbf{q} &=
+  \begin{bmatrix}
+  \mathbf{0}_{n}\\
+  \mathbf{p}' \Delta t
+  \end{bmatrix}
+&
+\mathbf{B} &=
+  \begin{bmatrix}
+  \mathbf{I}_{n} & \Delta t \mathbf{I}_{n}\\
+  \mathbf{L}' \Delta t & (1-h'\Delta t)\mathbf{I}_{n}
+  \end{bmatrix}
+\end{align*}
+where $\mathbf{0}_{n}$ is the $n \times 1$ zero vector and $\mathbf{I}_{n}$ is the $n \times n$ identity matrix. So we finally get:
+\begin{equation*}
+\mathbf{w}(t+1) = \mathbf{B} \mathbf{w}(t) + \mathbf{q}
+\end{equation*}
+
+** Stability of Euler Discretization
+\begin{equation*}
+\mathbf{w}(t+1) = \mathbf{B} \mathbf{w}(t) + \mathbf{q}
+\end{equation*}
+
+This equation is stable when $|\mathbf{B}| < 1$, i.e., when the largest eigenvalue $\lambda_{\text{max}}$ of $\mathbf{B}$ has $|\lambda_{\text{max}}| < 1$.
+
+Stability, in this context, means two things:
+- Given a specific $\Delta t$ step, what values of $k$ (spring constant) and $h$ (friction) produce a system that can self-stabilize?
+    - This is important mostly for the stability of the simulation
+- Given a specific $k$ for which the system stabilizes, how fast will it do it?
+    - This could be useful for controllability purposes of the real system!
+    - In this case, $\Delta t$ can be interpreted as the length of the control step
+
+** Stability Conditions /1
+To calculate the stability conditions, we use this trick:
+\begin{align*}
+\mathbf{B} &= I_{2n} + \Delta t \mathbf{D}
+&
+\mathbf{D} =
+ \begin{bmatrix}
+  \mathbf{0}_{n} & \mathbf{I}_{n} \\
+  \mathbf{L}' & -h'\mathbf{I}_{n} \\
+ \end{bmatrix}
+\end{align*}
+Therefore for each eigenvalue $\lambda$ of $\mathbf{B}$ we have
+\begin{equation*}
+\lambda = 1 + \nu \Delta t
+\end{equation*}
+where $\nu$ is an eigenvector of $\mathbf{D}$ and the condition becomes
+\begin{equation*}
+| \lambda | < 1 \Rightarrow | 1 + \nu \Delta t | < 1
+\end{equation*}
+
+** Stability Conditions /2
+Let’s assume $\nu \triangleq \alpha + i \beta$, then
+\begin{align*}
+| 1 + \nu \Delta t | &< 1 \\
+| 1 + \Delta t (\alpha + i \beta)|^2 &<1 \\
+| 1 + \Delta t \alpha + i \Delta t \beta|^2 &<1 \\
+(1 + \Delta t \alpha)^2 + (\Delta t \beta)^2 &<1 \\
+1 + (\Delta t \alpha)^2 + (\Delta t \beta)^2 + 2\Delta t \alpha &<1 \\
+\left[ (\Delta t \alpha)^2 + (\Delta t \beta)^2 \right] + 2\Delta t\text{Re}(\nu) &<0 \\
+(\Delta t|\nu|)^2 + 2\Delta t\text{Re}(\nu) &< 0\\
+\Aboxed{0 < \Delta t < \dfrac{-2\text{Re}(\nu)}{|\nu|^2}}
+\end{align*}
+
+** Stability Conditions /3
+So we want to calculate $\nu$. By applying the definition of eigenvalue we get
+\begin{equation*}
+\text{det}(\nu\mathbf{I}_{2n} - \mathbf{D})
+=
+\text{det}
+ \left(\begin{bmatrix}
+  \nu \mathbf{I}_{n} & -\mathbf{I}_{n}\\
+  -\mathbf{L}' & (\nu + h)\mathbf{I}_{n}\\
+ \end{bmatrix}\right)
+\end{equation*}
+and using [[https://www.statlect.com/matrix-algebra/determinant-of-block-matrix][the formula for the determinant of a block matrix]] we get
+\begin{align*}
+\text{det}(\nu\mathbf{I}_{2n} - \mathbf{D})
+&=
+\text{det}(\nu\mathbf{I}_{n})
+\text{det}((\nu+h)\mathbf{I}_{n} - \mathbf{L}'\dfrac{1}{\nu}\mathbf{I}_{n}\mathbf{I}_{n})\\
+&=
+\text{det}((\nu^{2}+h\nu)\mathbf{I}_{n} - \mathbf{L}')\\
+\end{align*}
+Now if we define $\eta' \triangleq \nu^{2} + h\nu$ we can interpret $\eta'$ as the eigenvalue of $\mathbf{L}'$
+
+** Stability Conditions /4
+\begin{align*}
+\mathbf{L}' = \dfrac{k}{m}\mathbf{L} \Rightarrow \eta = \dfrac{m}{k}\eta'
+\end{align*}
+where $\eta$ is an eigenvalue of $\mathbf{L}$. Because $k,m > 0$, the ordering of the eigenvalues is the same for both $\mathbf{L}'$ and $\mathbf{L}$.
+
+So the eigenvalues of $\mathbf{L}$ are related to the eigenvalues of $\mathbf{B}$:
+- Some eigenvalue tells us whether the entire spring system is stable
+    - Which eigenvalue? We’ll see next
+- The second smallest eigenvalue tells us if the spring network is connected
+    - If it’s $> 0$, the spring network is connected (always true for us)
+- The vibration modes are captured by the eigenvectors
+    - Would be cool to study, but it’s beyond my knowledge at the moment
+
+** Stability Conditions /5
+Because $\eta' \triangleq \nu^{2} + h\nu$ and $\eta = \dfrac{m}{k}\eta'$, we have:
+\begin{align*}
+\eta &= \dfrac{m}{k}\left(\nu^{2}+h\nu\right) \\
+0 &= \dfrac{m}{k}\nu^{2} + \dfrac{mh}{k} \nu - \eta \\
+\Aboxed{\nu_{1,2} &= \dfrac{-h}{2} \pm \dfrac{\sqrt{h^{2}+4k\eta/m}}{2}}
+\end{align*}
+Now let’s analyze $\nu_{1,2}$.
+- NOTE: It makes sense that for each $\eta$ there are two $\nu$!
+    - $\eta$ is the eigenvalue of $L$, which is a $n \times n$ matrix
+    - $\nu$ is the eigenvalue of $D$, which is a $2n \times 2n$ matrix
+
+** Stability Conditions /6
+\begin{equation*}
+\nu_{1} = \dfrac{-h}{2} + \dfrac{\sqrt{h^{2}+4k\eta/m}}{2}
+\quad\Rightarrow\quad
+\dfrac{\text{d}\nu_{1}}{\text{d}\eta} = \dfrac{k}{m\sqrt{h^{2}+4k\eta/m}} > 0 \;\forall \eta \geq 0
+\end{equation*}
+So $\nu_{1}$ is an *increasing* function of $\eta$. This doesn’t play well with our stability condition: $0 < \Delta t < -2\text{Re}(\nu_{1}) / |\nu_{1}|^{2} < 0$.
+
+\begin{equation*}
+\nu_{2} = \dfrac{-h}{2} - \dfrac{\sqrt{h^{2}+4k\eta/m}}{2}
+\quad\Rightarrow\quad
+\dfrac{\text{d}\nu_{2}}{\text{d}\eta} = -\dfrac{k}{m\sqrt{h^{2}+4k\eta/m}} < 0 \;\forall \eta \geq 0
+\end{equation*}
+So $\nu_{2}$ is a *decreasing* function of $\eta$. This means that the maximum $\nu_{2}$ corresponds to the minimum $\eta$. Because $\eta$ refers to the eigenvalues of the Laplacian matrix, we know that the smallest one is $\eta_{\text{min}} = 0$. Therefore our condition becomes:
+\begin{equation*}
+\boxed{
+0 < \Delta t < \dfrac{-2\text{Re}(\nu_{2})}{|\nu_{2}|^{2}} = \dfrac{2h}{h^{2}} = \dfrac{2}{h}
+}
+\end{equation*}
+
+* Discrete ODE Form (4th Order Runge-Kutta)
+
+** Discrete ODE Form (4th Order Runge-Kutta) /1
+The simulation we have in Julia uses a 4th order Runge-Kutta integrator. What value of $\Delta t$ should we use to get a stable simulation?
+In the 4th order Runge-Kutta, we calculate:
+\begin{align*}
+\mathbf{d}_{1} &= \mathbf{B}\mathbf{w}(t) + \mathbf{q} \\
+\mathbf{d}_{2} &= \mathbf{B}(\mathbf{w}(t) + \mathbf{d}_{1}\dfrac{\Delta t}{2}) + \mathbf{q} \\
+\mathbf{d}_{3} &= \mathbf{B}(\mathbf{w}(t) + \mathbf{d}_{2}\dfrac{\Delta t}{2}) + \mathbf{q} \\
+\mathbf{d}_{4} &= \mathbf{B}(\mathbf{w}(t) + \mathbf{d}_{3}\Delta t) + \mathbf{q} \\
+\mathbf{w}(t+1) &= \mathbf{w}(t) + \dfrac{\Delta t}{6}(\mathbf{d}_{1} + 2 \mathbf{d}_{2} + 2 \mathbf{d}_{3} + \mathbf{d}_{4})
+\end{align*}
+
+** Discrete ODE Form (4th Order Runge-Kutta) /2
+If we calculate explicitly the equation, we eventually get:
+\begin{equation*}
+\mathbf{w}(t+1) = \mathbf{C}\mathbf{w}(t) + \mathbf{D}\mathbf{q}
+\end{equation*}
+
+where:
+
+\begin{align*}
+\mathbf{C} &\triangleq
+ 1
+ + \Delta t \mathbf{B}
+ + \dfrac{\Delta t^2}{2} \mathbf{B}^2
+ + \dfrac{\Delta t^3}{6} \mathbf{B}^3
+ + \dfrac{\Delta t^4}{24} \mathbf{B}^4 \\
+\mathbf{D} &\triangleq
+ \Delta t
+ + \dfrac{\Delta t^2}{2} \mathbf{B}
+ + \dfrac{\Delta t^3}{6} \mathbf{B}^2
+ + \dfrac{\Delta t^4}{24} \mathbf{B}^3
+\end{align*}
+
+which is stable if $|\mathbf{C}| < 1$, i.e., if the largest eigenvalue $\mu_{\text{max}}$ of $\mathbf{C}$ has $|\mu_{\text{max}}| < 1$
+
+** About $\lambda_{\text{max}}$ and $\mu_{\text{max}}$
+We called $\lambda_{\text{max}}$ the largest eigenvalue of $\mathbf{B}$ and $\mu_{\text{max}}$ that of $\mathbf{C}$.
+
+What is their relationship?
+
+\begin{equation*}
+\mu_{\text{max}} =
+ 1
+ + \Delta t \lambda_{\text{max}}
+ + \dfrac{(\Delta t \lambda_{\text{max}})^2}{2}
+ + \dfrac{(\Delta t \lambda_{\text{max}})^3}{6}
+ + \dfrac{(\Delta t \lambda_{\text{max}})^4}{24}
+\end{equation*}
