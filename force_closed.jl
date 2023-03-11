@@ -16,9 +16,9 @@ gr()
 # Here we assume that extension occurs in the positive x
 hooke(x::Real, k::Real, l::Real) = k * (x - L)
 # Elastic constant
-K = 0.6
+K = 0.2
 # Rest length
-L = 3.1
+L = 0.031
 
 #
 # Position of the "anchor" Kilobots
@@ -56,4 +56,7 @@ for dx in range(1, X_SAMPLES)
 end
 
 XLABELS = string.(transpose(XS))
-display(plot(THETAS, f, labels=XLABELS))
+
+plt = plot(THETAS, f, labels=XLABELS, xlabel="angle [rad]", ylabel="force [N]")
+savefig(plt, "plot.png")
+display(plt)
