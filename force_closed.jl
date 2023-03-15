@@ -48,10 +48,7 @@ for dx in range(1, X_SAMPLES)
     d3 = sqrt(L2x2 + TwoLx*costheta)
     d4 = sqrt(L2x2 - TwoLx*sintheta)
     f[dtheta,dx] =
-      hooke(d1, K, L) +
-      hooke(d2, K, L) +
-      hooke(d3, K, L) +
-      hooke(d4, K, L)
+      sqrt(4 * L2x2 - 2 * (d1 * d3 + d2 * d4))
   end
 end
 
