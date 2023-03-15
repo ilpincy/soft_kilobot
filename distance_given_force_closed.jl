@@ -45,7 +45,7 @@ FORCE_MAX = 0.0167 # Newton
 # Look for maximum distance
 #
 # From the plot we know it's in the direction theta = pi/4 + i*pi/2,
-# so it's enough to test theta = pi/2 and the rest is symmetric.
+# so it's enough to test theta = pi/4 and the rest is symmetric.
 #
 function max_dist(target_f::Real)
   for x in range(0.0, L*2, step=0.0001)
@@ -58,5 +58,5 @@ end
 #
 # Let's go
 #
-println("Max distance for f = ", FORCE_MIN, " is ", max_dist(FORCE_MIN))
-println("Max distance for f = ", FORCE_MAX, " is ", max_dist(FORCE_MAX))
+println("Max distance for f = ", FORCE_MIN, " is ", max_dist(FORCE_MIN) * 100, " cm")
+println("Max distance for f = ", FORCE_MAX, " is ", max_dist(FORCE_MAX) * 100, " cm")
