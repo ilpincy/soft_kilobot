@@ -47,8 +47,12 @@ for dx in range(1, X_SAMPLES)
     d2 = sqrt(L2x2 + TwoLx*sintheta)
     d3 = sqrt(L2x2 + TwoLx*costheta)
     d4 = sqrt(L2x2 - TwoLx*sintheta)
+    delta1 = d1 - L
+    delta2 = d2 - L
+    delta3 = d3 - L
+    delta4 = d4 - L
     f[dtheta,dx] =
-      sqrt(4 * L2x2 - 2 * (d1 * d3 + d2 * d4))
+      sqrt(delta1^2 + delta2^2 + delta3^2 + delta4^2 - 2 * (delta1 * delta3 + delta2 * delta4))
   end
 end
 
