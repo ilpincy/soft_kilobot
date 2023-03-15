@@ -9,7 +9,7 @@ using LinearAlgebra
 # Here we assume that extension occurs in the positive x
 hooke(x::Real, k::Real, l::Real) = k * (x - L)
 # Elastic constant
-K = 0.2
+K = 0.6
 # Rest length (meters)
 L = 0.031
 L2 = L^2
@@ -38,8 +38,17 @@ end
 #
 # Parameters
 #
+# Target forces to consider
 FORCE_MIN = 0.0054 # Newton
 FORCE_MAX = 0.0167 # Newton
+# Gravitational constant
+G = 6.67430e−11
+# Kilobot mass
+M = 0.01 # kg
+# Friction coefficient
+MU = 1.0
+# Friction for any kilobot
+FRICTION = MU * M * G # Newton
 
 #
 # Look for maximum distance
@@ -49,7 +58,7 @@ FORCE_MAX = 0.0167 # Newton
 #
 function max_dist(target_f::Real)
   for x in range(0.0, L*2, step=0.0001)
-    if force(x, pi/4) > target_f
+    if force(x, pi/4) - FRICTION > target_f
       return x
     end
   end
@@ -58,5 +67,6 @@ end
 #
 # Let's go
 #
-println("Max distance for f = ", FORCE_MIN, " is ", max_dist(FORCE_MIN) * 100, " cm")
-println("Max distance for f = ", FORCE_MAX, " is ", max_dist(FORCE_MAX) * 100, " cm")
+print_dist(f) = println("Max distance for f = ", f, "N and friction = ", MU, " is ", max_dist(f) * 100, "cm")
+print_dist(FORCE_MIN)
+print_dist(FORCE_MAX)
