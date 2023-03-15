@@ -58,5 +58,5 @@ end
 XLABELS = string.(transpose(XS))
 
 plt = plot(THETAS, f, labels=XLABELS, xlabel="angle [rad]", ylabel="force [N]")
-savefig(plt, "plot.png")
+savefig(plt, "plot.pdf")
 display(plt)
