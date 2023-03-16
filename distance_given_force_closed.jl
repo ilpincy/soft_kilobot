@@ -12,7 +12,6 @@ hooke(x::Real, k::Real, l::Real) = k * (x - L)
 K = 0.6
 # Rest length (meters)
 L = 0.031
-L2 = L^2
 
 #
 # Position of the "anchor" Kilobots
@@ -23,16 +22,33 @@ KBs = [L 0 -L  0;
 #
 # Force magnitude (assuming no friction)
 #
-function force(x::Real, theta::Real)
-  L2x2 = L^2 + x^2
-  TwoLx = 2*L*x
-  costheta = cos(theta)
-  sintheta = sin(theta)
-  d1 = sqrt(L2x2 - TwoLx * costheta)
-  d2 = sqrt(L2x2 + TwoLx * sintheta)
-  d3 = sqrt(L2x2 + TwoLx * costheta)
-  d4 = sqrt(L2x2 - TwoLx * sintheta)
-  return hooke(d1, K, L) + hooke(d2, K, L) + hooke(d3, K, L) + hooke(d4, K, L)
+function force_polar(x::Real, theta::Real)
+  D1 = sqrt(L^2 + x^2 - 2*L*x * cos(theta))
+  D2 = sqrt(L^2 + x^2 - 2*L*x * sin(theta))
+  D3 = sqrt(L^2 + x^2 + 2*L*x * cos(theta))
+  D4 = sqrt(L^2 + x^2 + 2*L*x * sin(theta))
+  A = x * ((1-L/D1) + (1-L/D2) + (1-L/D3) + (1-L/D4))
+  B = L^2 * (1/D3 - 1/D1)
+  C = L^2 * (1/D4 - 1/D2)
+  return sqrt(A^2 + B^2 + C^2 - 2*A*(B*cos(theta) + C*sin(theta)))
+end
+
+function force_cartesian(rho::Real, theta::Real)
+  x = [rho*cos(theta); rho*sin(theta)]
+  d1 = x - KBs[:,1]
+  d2 = x - KBs[:,2]
+  d3 = x - KBs[:,3]
+  d4 = x - KBs[:,4]
+  n1 = sqrt(dot(d1, d1))
+  n2 = sqrt(dot(d2, d2))
+  n3 = sqrt(dot(d3, d3))
+  n4 = sqrt(dot(d4, d4))
+  e1 = d1 / n1
+  e2 = d2 / n2
+  e3 = d3 / n3
+  e4 = d4 / n4
+  f = (n1-L)*e1 + (n2-L)*e2 + (n3-L)*e3 + (n4-L)*e4
+  return sqrt(dot(f,f))
 end
 
 #
@@ -58,7 +74,7 @@ FRICTION = MU * M * G # Newton
 #
 function max_dist(target_f::Real)
   for x in range(0.0, L*2, step=0.0001)
-    if force(x, pi/4) - FRICTION > target_f
+    if force_polar(x, pi/4) - FRICTION > target_f
       return x
     end
   end
@@ -70,3 +86,13 @@ end
 print_dist(f) = println("Max distance for f = ", f, "N and friction = ", MU, " is ", max_dist(f) * 100, "cm")
 print_dist(FORCE_MIN)
 print_dist(FORCE_MAX)
+
+#
+# Validation
+#
+validatep(x, theta) = println("Polar force for (", x, ",", theta, ") = ", force_polar(x, theta))
+validatec(x, theta) = println("Cartesian force for (", x, ",", theta, ") = ", force_cartesian(x, theta))
+validatep(0.028, pi/4)
+validatep(0.028, 0)
+validatec(0.028, pi/4)
+validatec(0.028, 0)

@@ -16,7 +16,7 @@ gr()
 # Here we assume that extension occurs in the positive x
 hooke(x::Real, k::Real, l::Real) = k * (x - L)
 # Elastic constant
-K = 0.2
+K = 0.6
 # Rest length
 L = 0.031
 
@@ -52,7 +52,7 @@ for dx in range(1, X_SAMPLES)
     delta3 = d3 - L
     delta4 = d4 - L
     f[dtheta,dx] =
-      sqrt(delta1^2 + delta2^2 + delta3^2 + delta4^2 - 2 * (delta1 * delta3 + delta2 * delta4))
+      k* sqrt(delta1^2 + delta2^2 + delta3^2 + delta4^2 - 2 * (delta1 * delta3 + delta2 * delta4))
   end
 end
 
