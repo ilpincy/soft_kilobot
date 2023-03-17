@@ -30,7 +30,7 @@ function force_polar(x::Real, theta::Real)
   A = x * ((1-L/D1) + (1-L/D2) + (1-L/D3) + (1-L/D4))
   B = L^2 * (1/D3 - 1/D1)
   C = L^2 * (1/D4 - 1/D2)
-  return sqrt(A^2 + B^2 + C^2 - 2*A*(B*cos(theta) + C*sin(theta)))
+  return K * sqrt(A^2 + B^2 + C^2 - 2*A*(B*cos(theta) + C*sin(theta)))
 end
 
 function force_cartesian(rho::Real, theta::Real)
@@ -48,7 +48,7 @@ function force_cartesian(rho::Real, theta::Real)
   e3 = d3 / n3
   e4 = d4 / n4
   f = (n1-L)*e1 + (n2-L)*e2 + (n3-L)*e3 + (n4-L)*e4
-  return sqrt(dot(f,f))
+  return K * sqrt(dot(f,f))
 end
 
 #
