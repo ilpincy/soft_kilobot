@@ -83,16 +83,36 @@ end
 #
 # Let's go
 #
-print_dist(f) = println("Max distance for f = ", f, "N and friction = ", MU, " is ", max_dist(f) * 100, "cm")
-print_dist(FORCE_MIN)
-print_dist(FORCE_MAX)
+# print_dist(f) = println("Max distance for f = ", f, "N and friction = ", MU, " is ", max_dist(f) * 100, "cm")
+# print_dist(FORCE_MIN)
+# print_dist(FORCE_MAX)
 
 #
 # Validation
 #
-validatep(x, theta) = println("Polar force for (", x, ",", theta, ") = ", force_polar(x, theta))
-validatec(x, theta) = println("Cartesian force for (", x, ",", theta, ") = ", force_cartesian(x, theta))
-validatep(0.028, pi/4)
-validatep(0.028, 0)
-validatec(0.028, pi/4)
-validatec(0.028, 0)
+# validatep(x, theta) = println("Polar force for (", x, ",", theta, ") = ", force_polar(x, theta))
+# validatec(x, theta) = println("Cartesian force for (", x, ",", theta, ") = ", force_cartesian(x, theta))
+# validatep(0.028, pi/4)
+# validatep(0.028, 0)
+# validatec(0.028, pi/4)
+# validatec(0.028, 0)
+
+#
+# More validation
+#
+open("polar.txt", "w") do fdp
+  open("cartesian.txt", "w") do fdc
+    for i in -99:99
+      x = i * L / 100
+      for j in -99:99
+        y = j * L / 100
+        rho = sqrt(x*x + y*y)
+        theta = atan(y, x)
+        fp = force_polar(rho, theta)
+        fc = force_cartesian(rho, theta)
+        write(fdp, "$x $y $fp\n")
+        write(fdc, "$x $y $fc\n")
+      end
+    end
+  end
+end
